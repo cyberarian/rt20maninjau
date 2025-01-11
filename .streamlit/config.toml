@@ -1,0 +1,182 @@
+[theme]
+primaryColor = "#1E88E5"       # Modern blue
+backgroundColor = "#F5F5F5"    # Light grey
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#1A1A1A"
+font = "sans serif"
+
+[custom_css]
+css = """
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+/* Base Layout */
+.stApp {
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+/* Responsive Images */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Responsive Container */
+.main .block-container {
+    padding: clamp(1rem, 2vw, 2rem);
+}
+
+/* Responsive Text */
+@media screen and (max-width: 768px) {
+    .main .block-container {
+        padding: 1rem;
+    }
+    
+    img {
+        width: 200px !important;
+    }
+    
+    h1 { font-size: 1.5rem; }
+    h2 { font-size: 1.2rem; }
+    
+    .stMarkdown {
+        font-size: 0.9rem;
+    }
+    
+    .stButton button {
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+    
+    .stForm {
+        padding: 0.5rem;
+    }
+    
+    .stTextInput input {
+        font-size: 16px; /* Prevents zoom on mobile */
+    }
+}
+/* Typography Enhancement */
+body {
+    font-family: 'Roboto', sans-serif;
+    line-height: 1.6;
+    color: #334155;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+    color: #0F172A;
+    letter-spacing: -0.02em;
+}
+
+/* Container Styling */
+.main .block-container {
+    background-color: #FFFFFF;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+/* Tabs Enhancement */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 1rem;
+    border-bottom: 2px solid #E2E8F0;
+    padding-bottom: 0.5rem;
+}
+
+.stTabs [data-baseweb="tab"] {
+    height: 50px;
+    border-radius: 8px 8px 0 0;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.stTabs [data-baseweb="tab"]:hover {
+    background-color: #F1F5F9;
+}
+
+.stTabs [data-baseweb="tab"][aria-selected="true"] {
+    border-bottom: 3px solid #1E88E5;
+}
+
+/* Interactive Elements */
+.stButton button,
+button[kind="primary"] {
+    background-color:rgb(11, 70, 75);
+    color: #FFFFFF;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 500;
+    border: none;
+    box-shadow: 0 2px 4px rgb(30 136 229 / 0.2);
+    transition: all 0.2s ease;
+}
+
+.stButton button:hover,
+button[kind="primary"]:hover {
+    background-color: rgb(11, 70, 75);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgb(30 136 229 / 0.3);
+}
+/* Chat Interface */
+.stChatMessage {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin: 1rem 0;
+    box-shadow: 0 2px 4px rgb(0 0 0 / 0.05);
+    transition: transform 0.2s ease;
+}
+
+.stChatMessage:hover {
+    transform: translateY(-2px);
+}
+
+/* Inputs and Forms */
+.stTextInput input,
+.stTextArea textarea {
+    border-radius: 8px;
+    border: 2px solid #E2E8F0;
+    padding: 0.8rem;
+    transition: border-color 0.2s ease;
+}
+
+.stTextInput input:focus,
+.stTextArea textarea:focus {
+    border-color: #1E88E5;
+    box-shadow: 0 0 0 3px rgb(30 136 229 / 0.1);
+}
+
+/* Alerts and Info Boxes */
+.stAlert {
+    border-radius: 8px;
+    border-left: 4px solid #1E88E5;
+    background-color: rgb(30 136 229 / 0.1);
+    padding: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main .block-container {
+        padding: 1rem;
+    }
+    
+    .stChatMessage {
+        padding: 1rem;
+        margin: 0.5rem 0;
+    }
+    
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.5rem; }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.element-container {
+    animation: fadeIn 0.3s ease-out;
+}
+"""
