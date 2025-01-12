@@ -219,7 +219,7 @@ def show_chat_interface(llm, prompt):
     # Add logo
     col1, col2, col3 = st.columns([1,9,1])
     with col2:
-        st.image("assets/logo3.png", width=350)
+        st.image("assets/logo4.png", width=350)
     
     # Create tabs
         tab1, tab2, tab3 = st.tabs(["💬 Chat", "ℹ️ About", "❓ How-to"])
@@ -286,20 +286,25 @@ def show_chat_interface(llm, prompt):
     with tab2:
         st.write("""
         
-        ### Menghadirkan Layanan Publik dengan Teknologi AI
+        ### Menghadirkan Layanan publik berbasis AI untuk warga RT 20/RW 09
         
-        Selamat datang di aplikasi Streamlit kami, yang bertujuan untuk menghadirkan layanan publik yang lebih efektif dan efisien menggunakan teknologi Artificial Intelligence (AI). 
+        Selamat datang di aplikasi "rt20maninjau", yang bertujuan untuk menghadirkan layanan publik di lingkungan RT 20 dengan menggunakan teknologi Artificial Intelligence (AI). 
 
-        Sebagai Pengurus RT, kami berkomitmen untuk meningkatkan kualitas pelayanan publik yang lebih baik dan lebih cepat dengan mengintegrasikan AI dalam sistem pelayanan di lingkungan RT 20.
+        Sebagai Pengurus RT, kami berkomitmen untuk meningkatkan kualitas pelayanan yang lebih baik dan lebih cepat dengan mengintegrasikan AI dalam sistem pelayanan di lingkungan kami.
 
-        Aplikasi Streamlit kami menawarkan beberapa fitur yang dapat membantu meningkatkan kualitas pelayanan publik, seperti:
-
-        1. Sistem pelayanan online yang lebih cepat dan lebih efektif
-        2. Sistem pelayanan yang lebih personal dan responsif
-
-        #### Lokasi
-        RT 20/RW 09, Cluster Maninjau, Griya Suradita Indah (GSI), Desa Suradita, Kecamatan Cisauk, Kabupaten Tangerang, BANTEN        
-       
+        Aplikasi "rt20maninjau" mengintegrasikan teknologi AI untuk:
+        * Layanan personal
+        * Informasi real-time
+        * Memudahkan komunikasi RT-warga
+                
+        #### 🎯 Visi & Misi
+        Mewujudkan pelayanan warga yang modern, efisien, dan responsif.
+        
+        #### 🏡 Lokasi
+        RT 20/RW 09, Cluster Maninjau,
+        Griya Suradita Indah (GSI),
+        Desa Suradita, Kecamatan Cisauk,
+        Kabupaten Tangerang, 15843, Provinsi BANTEN
         """)
         
     with tab3:
@@ -309,7 +314,7 @@ def show_chat_interface(llm, prompt):
         st.markdown("""
         * Ketik pertanyaan Anda tentang RT 20 di kotak chat
         * Tunggu beberapa saat untuk mendapatkan jawaban
-        * Pertanyaan bisa dalam Bahasa Indonesia, Jawa, Sunda, Inggris juga boleh. Bahasa kalbu saya belum support😅
+        * Pertanyaan bisa dalam Bahasa Indonesia, Jawa, Sunda, Inggris juga boleh. Bahasa kalbu dan kode belum saya support😅
         """)
         
         st.subheader("🔍 Contoh Pertanyaan")
@@ -318,17 +323,18 @@ def show_chat_interface(llm, prompt):
         * "Apa saja fasilitas yang tersedia di RT 20?"
         * "Saya mau pindah domisili, bagaimana caranya?"
         * "Saya warga baru, apa yang harus saya lakukan?"
-        * "Listrik saya bermasalah, siapa yang bisa saya hubungi?"
+        * "Listrik saya bermasalah, mati lampu"
         * "Saya butuh kontak satpam"
         * "Mesin cuci saya rusak, punya kontak service elektronik gak?"
         * "Sampah saya kok belum diangkat ya?"
-        * "WC saya mampet"
+        * "WC saya mampet, penuh"
         * "dll."
         """)
         
         st.subheader("⚠️ Penting")
         st.info("""
-        * Chatbot hanya menjawab pertanyaan seputar RT 20 dan lingkungan sekitar. Tidak menerima curcol
+        * Aplikasi ini tidak merekam percakapan
+        * Chatbot hanya menjawab pertanyaan seputar RT 20 dan lingkungan sekitar. Tidak menerima curcol dan gosip🤐
         * Untuk informasi lebih lanjut, silakan hubungi pengurus RT
         """)
         
@@ -389,8 +395,8 @@ def main():
         
         prompt = ChatPromptTemplate.from_template("""
            Your role: Your name is Pak RT.
-            Language: Introduce yourself in formal Bahasa Indonesia.
-            Function: Assist the user in finding relevant information within provided documents, including names, titles, locations, history, tables, images, and other relevant texts.
+            Language: Dynamically adapt your responses to match the user's language with formal tone
+            Function: Assist the user in finding relevant information within provided documents, including names, titles, locations, history, tables, images, and other relevant texts. Keep responses brief and accurate; provide detailed explanations only when specifically requested.
             Greetings: respond to the greetings accordingly.
             
             Guidelines:
@@ -405,11 +411,11 @@ def main():
             - End with relevant context if needed
                                 
             3. Content Rules:
-            - Base your responses strictly on the document's content and context. Do not add external knowledge or assumptions.
-            - Provide concise and accurate answers in one sentence unless a long-form response is requested.
-            - Do not respond with irrelevant, misleading, or incomplete information
-            - Present table data in a clear and logical format for easy understanding.
-            - Strive for accuracy and relevance in all responses.
+            - Base your responses strictly on the document's content and context
+            - Provide answers that directly address the user's question only
+            - Do not respond user's questions with irrelevant, misleading, or incomplete information
+            - Present table data in a clear and logical format for easy understanding
+            - Strive for accuracy and relevance in all responses
             
             lang:id-ID
             
