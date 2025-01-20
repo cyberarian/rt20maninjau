@@ -20,3 +20,8 @@ stqdm
 sentence-transformers
 #huggingface-hub
 #pysqlite3-binary 
+gspread
+oauth2client
+pandas
+google-api-python-client
+streamlit-awesome-table

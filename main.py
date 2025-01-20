@@ -25,10 +25,106 @@ from langchain.schema import Document
 from langchain.globals import set_verbose
 from dotenv import load_dotenv
 from streamlit.runtime.caching import cache_data, cache_resource
+from datetime import datetime
 import toml
 import chromadb
-#import sqlite3
+from st_aggrid import AgGrid, GridOptionsBuilder
+import sqlite3
 
+# Update the init_members_db function with migration handling
+def init_members_db():
+    conn = sqlite3.connect("members.db")
+    c = conn.cursor()
+    
+    # First check if table exists
+    c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='members'")
+    table_exists = c.fetchone() is not None
+    
+    if not table_exists:
+        # Create new table with all columns
+        c.execute("""
+            CREATE TABLE members (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                email TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                block_number TEXT NOT NULL
+            )
+        """)
+    else:
+        # Check if block_number column exists
+        c.execute("PRAGMA table_info(members)")
+        columns = [column[1] for column in c.fetchall()]
+        
+        # Add block_number column if it doesn't exist
+        if "block_number" not in columns:
+            c.execute("ALTER TABLE members ADD COLUMN block_number TEXT DEFAULT 'Not Specified'")
+    
+    conn.commit()
+    conn.close()
+
+# Initialize the database
+init_members_db()
+
+# Initialize SQLite databases
+def init_db(db_name, table_name, columns):
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+    c.execute(f"""
+        CREATE TABLE IF NOT EXISTS {table_name} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            {', '.join(columns)}
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+# Initialize form submissions database
+init_db(
+    db_name="form_submissions.db",
+    table_name="form_submissions",
+    columns=[
+        "submitted_date TEXT",
+        "nama_lengkap TEXT",
+        "blok_nomor_rumah TEXT",
+        "email TEXT",
+        "bulan TEXT",
+        "pesan_keterangan TEXT",
+        "bukti_pembayaran TEXT"
+    ]
+)
+
+# Initialize feedback submissions database
+init_db(
+    db_name="feedback_submissions.db",
+    table_name="feedback_submissions",
+    columns=[
+        "submitted_date TEXT",
+        "name TEXT",
+        "blok_no TEXT",
+        "pesan TEXT"
+    ]
+)
+# Global DataFrame to store form submissions
+if 'form_submissions' not in st.session_state:
+    st.session_state.form_submissions = pd.DataFrame(columns=[
+        "Submitted Date", "Nama Lengkap", "Blok/Nomor Rumah", "Email", "Bulan", "Pesan/Keterangan", "Bukti Pembayaran"
+    ])
+    
+    # Load existing submissions from the CSV file (if it exists)
+    if os.path.exists("form_submissions.csv"):
+        st.session_state.form_submissions = pd.read_csv("form_submissions.csv")
+
+# Global DataFrame to store feedback submissions
+if 'feedback_submissions' not in st.session_state:
+    st.session_state.feedback_submissions = pd.DataFrame(columns=[
+        "Submitted Date", "Name", "Blok/No", "Pesan"
+    ])
+    
+    # Load existing feedback submissions from the CSV file (if it exists)
+    if os.path.exists("feedback_submissions.csv"):
+        st.session_state.feedback_submissions = pd.read_csv("feedback_submissions.csv")
+        
 # Set the page layout to wide
 st.set_page_config(layout="wide")
 
@@ -37,6 +133,17 @@ config = toml.load(".streamlit/config.toml")
 
 # Apply the custom CSS
 st.markdown(f"<style>{config['custom_css']['css']}</style>", unsafe_allow_html=True)
+# Add custom CSS for blue font in AwesomeTable
+st.markdown(
+    """
+    <style>
+    .awesome-table {
+        color: blue !important;  /* Set font color to blue */
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 # Load the admin password from the .env file
 admin_password = os.getenv('ADMIN_PASSWORD')
@@ -57,6 +164,147 @@ def memory_track():
     finally:
         gc.collect()
 
+def show_landing_page():
+    """Display the landing page with a background image and transparent content container."""
+    # Set the background image URL
+    background_image_url = "assets/logo3.png"  # Update this path to your image
+
+    # Debug: Display the image to verify the path
+    st.image(background_image_url, use_container_width=True)
+
+    # Use custom CSS to set the background image and style the content container
+    st.markdown(
+        f"""
+        <style>
+        /* Set the background image for the entire app */
+        [data-testid="stAppViewContainer"] {{
+            background-image: url("{background_image_url}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed; /* Optional: Fix the background while scrolling */
+        }}
+
+        /* Ensure the background image covers the entire viewport */
+        [data-testid="stAppViewContainer"] > .main {{
+            background-color: transparent;
+        }}
+
+        /* Style the transparent content container */
+        .landing-container {{
+            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
+            border-radius: 15px; /* Rounded corners */
+            padding: 20px; /* Padding inside the container */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            margin: 0 auto; /* Center the container */
+            max-width: 800px; /* Limit the width of the container */
+        }}
+
+        .landing-container h1, .landing-container h2, .landing-container h3 {{
+            text-align: center; /* Center align headings */
+        }}
+
+        .landing-container ul {{
+            list-style-type: disc; /* Bullet points for lists */
+            padding-left: 40px; /* Indent lists */
+        }}
+
+        .centered {{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Open the transparent container
+    st.markdown('<div class="landing-container">', unsafe_allow_html=True)
+
+    # Title and Introduction
+    st.title("Selamat Datang di Aplikasi RT20Maninjau")
+    st.write("""
+    ### Layanan Publik Berbasis Teknologi Modern
+    Aplikasi RT20Maninjau merupakan inisiatif dari Pengurus RT 20/RW 09, Cluster Maninjau, Desa Suradita, Kecamatan Cisauk, Kabupaten Tangerang, untuk memberikan layanan publik yang lebih efisien, transparan, dan responsif kepada seluruh warga. 
+    
+    Dengan memanfaatkan teknologi terkini, kami berkomitmen untuk meningkatkan kualitas pelayanan dan memudahkan akses informasi bagi seluruh warga.
+    
+    Dirancang untuk menyediakan berbagai layanan publik secara terintegrasi, aplikasi ini memungkinkan warga untuk:
+    - Mengakses informasi terkini tentang kegiatan dan program RT 20.
+    - Mengajukan pertanyaan atau permohonan bantuan melalui antarmuka chatbot.
+    - Mengisi formulir online untuk keperluan administrasi, seperti pembayaran iuran bulanan dan saran/kritik.
+    - Mendapatkan panduan dan informasi seputar layanan publik di lingkungan RT 20.
+    """)
+
+    st.markdown("### Daftar Menjadi Anggota")
+    with st.form("signup_form", clear_on_submit=True):
+        name = st.text_input("Nama Lengkap*", key="signup_name")
+        block_number = st.text_input("Blok/No. Rumah*", key="signup_block", placeholder="A1/20")
+        email = st.text_input("Email*", key="signup_email")
+        password = st.text_input("Password*", type="password", key="signup_password")
+        submitted = st.form_submit_button("Daftar")
+        
+        if submitted:
+            if not all([name, email, password, block_number]):
+                st.error("❌ Mohon lengkapi semua field yang wajib (*)")
+            else:
+                # Save the member data to the database
+                conn = sqlite3.connect("members.db")
+                c = conn.cursor()
+                try:
+                    c.execute("""
+                        INSERT INTO members (name, email, password, block_number)
+                        VALUES (?, ?, ?, ?)
+                    """, (name, email, password, block_number))
+                    conn.commit()
+                    st.success("✅ Pendaftaran berhasil! Silakan login untuk mengakses formulir.")
+                except sqlite3.IntegrityError:
+                    st.error("❌ Email sudah terdaftar. Silakan gunakan email lain.")
+                finally:
+                    conn.close()
+
+    # Centered "Access Admin Panel" button
+    st.markdown('<div class="centered">', unsafe_allow_html=True)
+    if st.button("Klik disini lebih lanjut", key="access_admin_button"):
+        st.session_state['show_admin'] = True
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Close the transparent container
+    st.markdown('</div>', unsafe_allow_html=True)
+
+def show_login_form(key="login_form"):
+    """Display the login form with a unique key."""
+    st.markdown("### Login untuk Mengakses Formulir")
+    with st.form(key=key, clear_on_submit=True):  # Use the provided key
+        email = st.text_input("Email*", key=f"{key}_email")
+        password = st.text_input("Password*", type="password", key=f"{key}_password")
+        submitted = st.form_submit_button("Login")
+        
+        if submitted:
+            if not all([email, password]):
+                st.error("❌ Mohon lengkapi semua field yang wajib (*)")
+            else:
+                # Check if the member exists in the database
+                conn = sqlite3.connect("members.db")
+                c = conn.cursor()
+                c.execute("SELECT * FROM members WHERE email = ? AND password = ?", (email, password))
+                member = c.fetchone()
+                conn.close()
+                
+                if member:
+                    st.session_state['logged_in'] = True
+                    st.session_state['member_name'] = member[1]  # Store the member's name
+                    st.success(f"✅ Selamat datang, {member[1]}! Anda sekarang dapat mengakses formulir.")
+                    
+                    # Force a rerun to update the UI
+                    st.rerun()
+                else:
+                    st.error("❌ Email atau password salah. Silakan coba lagi.")
+                    
 def setup_admin_sidebar():
     """Setup admin authentication and controls in sidebar"""
     if 'admin_authenticated' not in st.session_state:
@@ -108,11 +356,13 @@ def show_admin_controls():
         for filename in st.session_state.uploaded_file_names:
             st.sidebar.write(f"- {filename}")
     
+    
+    
     # Reset system
     st.sidebar.divider()
     st.sidebar.header("System Reset")
     if st.sidebar.button("Reset Everything", key="reset_everything_button"):
-        if st.sidebar.checkbox("Are you sure? This will delete all processed documents."):
+        if st.sidebar.checkbox("Are you sure? This will delete all processed documents and submissions."):
             try:
                 # Clear cache first
                 clear_cache()
@@ -124,11 +374,40 @@ def show_admin_controls():
                     st.session_state.uploaded_file_names.clear()
                     st.session_state.vectorstore = None
                 
+                # Clear form submissions
+                if os.path.exists("form_submissions.csv"):
+                    os.remove("form_submissions.csv")
+                    st.session_state.form_submissions = pd.DataFrame(columns=[
+                        "Submitted Date", "Nama Lengkap", "Blok/Nomor Rumah", "Email", "Bulan", "Pesan/Keterangan", "Bukti Pembayaran"
+                    ])
+                
+                # Clear feedback submissions
+                if os.path.exists("feedback_submissions.csv"):
+                    os.remove("feedback_submissions.csv")
+                    st.session_state.feedback_submissions = pd.DataFrame(columns=[
+                        "Submitted Date", "Name", "Blok/No", "Pesan"
+                    ])
+                
                 st.sidebar.success("Complete reset successful!")
                 st.rerun()
             except Exception as e:
                 st.sidebar.error(f"Error during reset: {str(e)}")
                 logger.error(traceback.format_exc())
+                
+def show_form_submissions():
+    """Display the form submissions DataFrame in the Admin Panel."""
+    if st.session_state.admin_authenticated:
+        st.sidebar.header("Form Submissions")
+        
+        # Check if there are submissions in the session state
+        if not st.session_state.form_submissions.empty:
+            st.sidebar.dataframe(st.session_state.form_submissions)
+        # If no submissions in session state, check the CSV file
+        elif os.path.exists("form_submissions.csv"):
+            df = pd.read_csv("form_submissions.csv")
+            st.sidebar.dataframe(df)
+        else:
+            st.sidebar.info("No form submissions yet.")
 
 def extract_text_from_pdf(pdf_file) -> str:
     """Extract text content from a PDF file"""
@@ -217,12 +496,12 @@ def clear_cache():
 def show_chat_interface(llm, prompt):
     """Display the main chat interface"""
     # Add logo
-    col1, col2, col3 = st.columns([1,9,1])
+    col1, col2, col3 = st.columns([1,100,1])
     with col2:
-        st.image("assets/logo4.png", width=350)
+        st.image("assets/logo3.png", width=350)
     
     # Create tabs
-        tab1, tab2, tab3 = st.tabs(["💬 Chat", "ℹ️ About", "❓ How-to"])
+    tab1, tab4, tab5, tab3, tab2 = st.tabs(["💬 Chat", "📝 Formulir IPL", "📝 Saran/Kritik", "❓ How-to", "ℹ️ About",])    
     
     with tab1:
         # Add a greeting message
@@ -283,16 +562,19 @@ def show_chat_interface(llm, prompt):
         if st.session_state.chat_history and st.button("Clear Chat History"):
             st.session_state.chat_history = []
             st.rerun()
+            
+        # Footer
+        st.markdown("---")
+        st.markdown("Built by Ketua RT 20 with help from AI :orange_heart:", help="cyberariani@gmail.com")
     with tab2:
         st.write("""
-        
         ### Menghadirkan Layanan publik berbasis AI untuk warga RT 20/RW 09
         
-        Selamat datang di aplikasi "rt20maninjau", yang bertujuan untuk menghadirkan layanan publik di lingkungan RT 20 dengan menggunakan teknologi Artificial Intelligence (AI). 
+        Selamat datang di Aplikasi RT20Maninjau, yang bertujuan untuk menghadirkan layanan publik di lingkungan RT 20 dengan menggunakan teknologi Artificial Intelligence (AI). 
 
         Sebagai Pengurus RT, kami berkomitmen untuk meningkatkan kualitas pelayanan yang lebih baik dan lebih cepat dengan mengintegrasikan AI dalam sistem pelayanan di lingkungan kami.
 
-        Aplikasi "rt20maninjau" mengintegrasikan teknologi AI untuk:
+        Aplikasi RT20Maninjau mengintegrasikan teknologi AI untuk:
         * Layanan personal
         * Informasi real-time
         * Memudahkan komunikasi RT-warga
@@ -306,7 +588,9 @@ def show_chat_interface(llm, prompt):
         Desa Suradita, Kecamatan Cisauk,
         Kabupaten Tangerang, 15843, Provinsi BANTEN
         """)
-        
+        # Footer
+        st.markdown("---")
+        st.markdown("Built by Ketua RT 20 with help from AI :orange_heart:", help="cyberariani@gmail.com")
     with tab3:
         st.header("Cara Menggunakan Chatbot RT 20")
         
@@ -317,7 +601,7 @@ def show_chat_interface(llm, prompt):
         * Pertanyaan bisa dalam Bahasa Indonesia, Jawa, Sunda, Inggris juga boleh. Bahasa kalbu dan kode belum saya support😅
         """)
         
-        st.subheader("🔍 Contoh Pertanyaan")
+        st.subheader("🔍 FAQs (Fertanyaan yAng sering ditanyaQans)")
         st.markdown("""
         * "Siapa saja pengurus RT 20?"
         * "Apa saja fasilitas yang tersedia di RT 20?"
@@ -338,6 +622,174 @@ def show_chat_interface(llm, prompt):
         * Untuk informasi lebih lanjut, silakan hubungi pengurus RT
         """)
         
+        # Footer
+        st.markdown("---")
+        st.markdown("Built by Ketua RT 20 with help from AI :orange_heart:", help="cyberariani@gmail.com")
+        
+    with tab4:
+        # Check if the user is logged in
+        if st.session_state.get('logged_in'):
+            st.header("📝 Form Iuran Bulanan")
+            st.markdown("Silakan lengkapi form berikut untuk pembayaran iuran:")
+            
+            with st.form("payment_form", clear_on_submit=True):
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    nama = st.text_input("Nama Lengkap*", key="nama")
+                    blok = st.text_input("Blok/Nomor Rumah*", key="blok", placeholder="A1/20")
+                    email = st.text_input("Email*", key="email")
+                
+                with col2:
+                    bulan = st.multiselect(
+                        "Pembayaran Bulan*",
+                        ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+                        "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
+                    )
+                    pesan = st.text_area("Pesan/Keterangan", placeholder="Tambahan informasi...")
+                    bukti = st.file_uploader("Bukti Pembayaran*", type=['pdf','png','jpg','jpeg'])
+                
+                submitted = st.form_submit_button("Kirim Form")
+                
+                if submitted:
+                    if not all([nama, blok, email, bulan, bukti]):
+                        st.error("❌ Mohon lengkapi semua field yang wajib (*)")
+                    else:
+                        # Save the form data to the database
+                        conn = sqlite3.connect("form_submissions.db")
+                        c = conn.cursor()
+                        c.execute("""
+                            INSERT INTO form_submissions (
+                                submitted_date, nama_lengkap, blok_nomor_rumah, email, bulan, pesan_keterangan, bukti_pembayaran
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                        """, (
+                            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                            nama,
+                            blok,
+                            email,
+                            ", ".join(bulan),
+                            pesan,
+                            bukti.name if bukti else None
+                        ))
+                        conn.commit()
+                        conn.close()
+                        
+                        st.success("✅ Form berhasil dikirim!")
+                        st.info("💡 Data akan tersimpan di database RT 20")
+        else:
+            st.warning("🔒 Silakan login untuk mengakses formulir ini.")
+            show_login_form(key="login_form_tab4")  # Unique key for Tab 4
+            
+            # Display the form submissions below the form (only for admins)
+        if st.session_state.admin_authenticated:
+            st.header("Form Submissions")
+            conn = sqlite3.connect("form_submissions.db")
+            df = pd.read_sql_query("SELECT * FROM form_submissions", conn)
+            conn.close()
+            
+            if not df.empty:
+                # Configure AgGrid
+                gb = GridOptionsBuilder.from_dataframe(df)
+                gb.configure_default_column(
+                    editable=False,  # Disable editing
+                    filterable=True,  # Enable filtering
+                    sortable=True,    # Enable sorting
+                    resizable=True    # Enable column resizing
+                )
+                # Enable text wrapping for the "pesan_keterangan" column
+                gb.configure_column("pesan_keterangan", wrapText=True, autoHeight=True)
+                gb.configure_pagination(
+                    paginationAutoPageSize=False,  # Disable auto page size
+                    paginationPageSize=10          # Set page size to 10
+                )
+                grid_options = gb.build()
+                
+                # Display the table
+                AgGrid(
+                    df,
+                    gridOptions=grid_options,
+                    height=400,  # Set table height
+                    theme="streamlit",  # Use Streamlit theme
+                    fit_columns_on_grid_load=True,  # Fit columns to grid width
+                    autoSizeColumns=True  # Automatically adjust column widths
+                )
+        else:
+                st.info("Belum ada form yang dikirim.")
+    with tab5:
+        # Check if the user is logged in
+        if st.session_state.get('logged_in'):
+            st.header("📝 Saran/Masukan/Kritik")
+            st.markdown("Silakan berikan saran, masukan, atau kritik Anda:")
+            
+            with st.form("feedback_form", clear_on_submit=True):
+                name = st.text_input("Nama*", key="feedback_name")
+                blok_no = st.text_input("Blok/No*", key="feedback_blok_no", placeholder="A1/20")
+                pesan = st.text_area("Pesan*", placeholder="Tulis saran, masukan, atau kritik Anda...")
+                
+                submitted = st.form_submit_button("Kirim")
+                
+                if submitted:
+                    if not all([name, blok_no, pesan]):
+                        st.error("❌ Mohon lengkapi semua field yang wajib (*)")
+                    else:
+                        # Save the feedback data to the database
+                        conn = sqlite3.connect("feedback_submissions.db")
+                        c = conn.cursor()
+                        c.execute("""
+                            INSERT INTO feedback_submissions (
+                                submitted_date, name, blok_no, pesan
+                            ) VALUES (?, ?, ?, ?)
+                        """, (
+                            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                            name,
+                            blok_no,
+                            pesan
+                        ))
+                        conn.commit()
+                        conn.close()
+                        
+                        st.success("✅ Terima kasih! Saran/masukan/kritik Anda telah berhasil dikirim.")
+                        st.info("💡 Data akan tersimpan di database RT 20")
+        else:
+            st.warning("🔒 Silakan login untuk mengakses formulir ini.")
+            show_login_form(key="login_form_tab5")  # Unique key for Tab 5
+            
+            # Display the feedback submissions below the form (only for admins)
+        if st.session_state.admin_authenticated:
+            st.header("Feedback Submissions")
+            conn = sqlite3.connect("feedback_submissions.db")
+            df = pd.read_sql_query("SELECT * FROM feedback_submissions", conn)
+            conn.close()
+            
+            if not df.empty:
+                # Configure AgGrid
+                gb = GridOptionsBuilder.from_dataframe(df)
+                gb.configure_default_column(
+                    editable=False,  # Disable editing
+                    filterable=True,  # Enable filtering
+                    sortable=True,    # Enable sorting
+                    resizable=True    # Enable column resizing
+                )
+                # Enable text wrapping for the "pesan" column
+                gb.configure_column("pesan", wrapText=True, autoHeight=True)
+                gb.configure_pagination(
+                    paginationAutoPageSize=False,  # Disable auto page size
+                    paginationPageSize=10          # Set page size to 10
+                )
+                grid_options = gb.build()
+                
+                # Display the table
+                AgGrid(
+                    df,
+                    gridOptions=grid_options,
+                    height=400,  # Set table height
+                    theme="streamlit",  # Use Streamlit theme
+                    fit_columns_on_grid_load=True,  # Fit columns to grid width
+                    autoSizeColumns=True  # Automatically adjust column widths
+                )
+            else:
+                st.info("Belum ada saran/masukan/kritik yang diterima.")
+            
 def initialize_or_load_vectorstore():
     """Initialize or load the vector store for document embeddings"""
     try:
@@ -363,6 +815,15 @@ def main():
     
     set_verbose(True)
     load_dotenv()
+    
+    # Initialize session state for showing admin panel
+    if 'show_admin' not in st.session_state:
+        st.session_state['show_admin'] = False
+
+    # Show landing page if not accessing admin panel
+    if not st.session_state['show_admin']:
+        show_landing_page()
+        return
     
     # Load and validate API keys
     groq_api_key = os.getenv('GROQ_API_KEY')
@@ -394,34 +855,33 @@ def main():
         )
         
         prompt = ChatPromptTemplate.from_template("""
-           Your role: Your name is Pak RT.
+            Your name: Pak RT.
             Language: Dynamically adapt your responses to match the user's language with formal tone
-            Function: Assist the user in finding relevant information within provided documents, including names, titles, locations, history, tables, images, and other relevant texts. Keep responses brief and accurate; provide detailed explanations only when specifically requested.
-            Greetings: respond to the greetings accordingly.
-            
+            Function: Assist the user in finding only relevant information within the provided documents. Your responses must be concise, accurate, and directly address the user's question. Do not include irrelevant details or assumptions.
+
             Guidelines:
-            1. Format responses as follows:
-            - Use bullet points for steps, procedures, or stages
-            - Present sequential information in numbered lists
-            - Break down complex answers into clear bullet points
-            
-            2. Response Structure:
-            - Start with direct answer
-            - List steps/procedures with bullets
-            - End with relevant context if needed
-                                
-            3. Content Rules:
-            - Base your responses strictly on the document's content and context
-            - Provide answers that directly address the user's question only
-            - Do not respond user's questions with irrelevant, misleading, or incomplete information
-            - Present table data in a clear and logical format for easy understanding
-            - Strive for accuracy and relevance in all responses
-            
-            lang:id-ID
-            
+            1. **Relevance**: Base your responses strictly on the content of the provided documents. Do not provide information outside the context of the documents.
+            2. **Conciseness**: Keep responses brief and to the point. Only provide detailed explanations if explicitly requested by the user.
+            3. **Accuracy**: Ensure all information is accurate and directly sourced from the documents. Do not guess or infer information.
+            4. **Structure**:
+            - Start with a direct answer to the question.
+            - If necessary, provide supporting details in bullet points or numbered lists.
+            - End with a summary or conclusion if the question requires it.
+            5. **Language**: Use clear and formal language. Adapt your tone to match the user's language (e.g., formal, informal, technical).
+
+            Examples:
+            - If the user asks for a name, provide only the name and its context from the documents.
+            - If the user asks for a location, provide only the location and its relevance from the documents.
+            - If the user asks for a procedure, provide a step-by-step list only if the steps are explicitly mentioned in the documents.
+
+            Do not:
+            - Provide opinions or assumptions.
+            - Include information not found in the documents.
+            - Add unnecessary explanations or details.
+
             Context:
             {context}
-            
+
             Question: {input}
             """)
             
@@ -434,9 +894,6 @@ def main():
     
     # Show main chat interface
     show_chat_interface(llm, prompt)
-
-# Footer
-    st.markdown("---")
-    st.markdown("Built by Ketua RT 20 with help from AI :orange_heart:", help="cyberariani@gmail.com")
+    
 if __name__ == "__main__":
     main()

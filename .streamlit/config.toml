@@ -1,162 +1,128 @@
 [theme]
-primaryColor = "#1E88E5"       # Modern blue
-backgroundColor = "#F5F5F5"    # Light grey
-secondaryBackgroundColor = "#FFFFFF"
-textColor = "#1A1A1A"
+primaryColor = "#1E88E5"
+backgroundColor = "#0E1117"
+secondaryBackgroundColor = "#1E1E1E"
+textColor = "#FAFAFA"
 font = "sans serif"
 
 [custom_css]
 css = """
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
 
-/* Base Layout */
-.stApp {
-    max-width: 100%;
-    margin: 0 auto;
-}
-
-/* Responsive Images */
-img {
-    max-width: 100%;
-    height: auto;
-}
-
-/* Responsive Container */
-.main .block-container {
-    padding: clamp(1rem, 2vw, 2rem);
-}
-
-/* Responsive Text */
-@media screen and (max-width: 768px) {
-    .main .block-container {
-        padding: 1rem;
-    }
-    
-    img {
-        width: 200px !important;
-    }
-    
-    h1 { font-size: 1.5rem; }
-    h2 { font-size: 1.2rem; }
-    
-    .stMarkdown {
-        font-size: 0.9rem;
-    }
-    
-    .stButton button {
-        width: 100%;
-        margin: 0.5rem 0;
-    }
-    
-    .stForm {
-        padding: 0.5rem;
-    }
-    
-    .stTextInput input {
-        font-size: 16px; /* Prevents zoom on mobile */
-    }
-}
-/* Typography Enhancement */
+/* Base styles */
 body {
     font-family: 'Roboto', sans-serif;
     line-height: 1.6;
-    color: #334155;
+    color: #FAFAFA;
+    background-color: #0E1117;
 }
 
 h1, h2, h3, h4, h5, h6 {
     font-family: 'Playfair Display', serif;
-    color: #0F172A;
+    color: #FAFAFA;
     letter-spacing: -0.02em;
 }
 
 /* Container Styling */
 .main .block-container {
-    background-color: #FFFFFF;
+    background-color: #0E1117;
     padding: 2rem;
     border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
 
-/* Tabs Enhancement */
+/* Chat Interface */
+.stChatMessage {
+    background-color: #1E1E1E;
+    color: #FAFAFA;
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin: 1rem 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease;
+}
+
+/* Tabs Styling */
 .stTabs [data-baseweb="tab-list"] {
     gap: 1rem;
-    border-bottom: 2px solid #E2E8F0;
-    padding-bottom: 0.5rem;
+    background-color: #0E1117;
+    padding: 0.3rem;
+    border-radius: 15px;
 }
 
 .stTabs [data-baseweb="tab"] {
     height: 50px;
-    border-radius: 8px 8px 0 0;
+    border-radius: 28px;
     transition: all 0.2s ease;
     font-weight: 500;
+    color: #FAFAFA;
 }
 
 .stTabs [data-baseweb="tab"]:hover {
-    background-color: #F1F5F9;
+    background-color: #2D2D2D;
 }
 
 .stTabs [data-baseweb="tab"][aria-selected="true"] {
-    border-bottom: 3px solid #1E88E5;
+    background-color:rgb(36, 40, 44);
+    color: #FFFFFF;
 }
 
 /* Interactive Elements */
 .stButton button,
 button[kind="primary"] {
-    background-color:rgb(11, 70, 75);
+    background-color:rgb(19, 85, 143);
     color: #FFFFFF;
     border-radius: 8px;
     padding: 0.6rem 1.2rem;
     font-weight: 500;
     border: none;
-    box-shadow: 0 2px 4px rgb(30 136 229 / 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     transition: all 0.2s ease;
 }
 
 .stButton button:hover,
 button[kind="primary"]:hover {
-    background-color: rgb(11, 70, 75);
+    background-color: #1976D2;
     transform: translateY(-1px);
-    box-shadow: 0 4px 6px rgb(30 136 229 / 0.3);
-}
-/* Chat Interface */
-.stChatMessage {
-    background-color: #FFFFFF;
-    border-radius: 12px;
-    padding: 1.2rem;
-    margin: 1rem 0;
-    box-shadow: 0 2px 4px rgb(0 0 0 / 0.05);
-    transition: transform 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
-.stChatMessage:hover {
-    transform: translateY(-2px);
-}
-
-/* Inputs and Forms */
+/* Form Elements */
 .stTextInput input,
 .stTextArea textarea {
+    background-color: #1E1E1E;
+    color: #FAFAFA;
+    border: 1px solid #2D2D2D;
     border-radius: 8px;
-    border: 2px solid #E2E8F0;
-    padding: 0.8rem;
-    transition: border-color 0.2s ease;
 }
 
-.stTextInput input:focus,
-.stTextArea textarea:focus {
-    border-color: #1E88E5;
-    box-shadow: 0 0 0 3px rgb(30 136 229 / 0.1);
+/* AwesomeTable Styling */
+.st-awesome-table {
+    font-family: 'Roboto', sans-serif !important;
 }
 
-/* Alerts and Info Boxes */
-.stAlert {
-    border-radius: 8px;
-    border-left: 4px solid #1E88E5;
-    background-color: rgb(30 136 229 / 0.1);
-    padding: 1rem;
+.st-awesome-table table {
+    width: 100% !important;
+}
+
+.st-awesome-table td, 
+.st-awesome-table th {
+    color: #0066cc !important;  /* Blue color for all text */
+    font-size: 14px !important;
+    padding: 8px !important;
+}
+
+.st-awesome-table th {
+    font-weight: 600 !important;
+    background-color: #f8f9fa !important;
+}
+
+.st-awesome-table tr:hover {
+    background-color: #f5f5f5 !important;
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
     .main .block-container {
         padding: 1rem;
     }
@@ -166,17 +132,7 @@ button[kind="primary"]:hover {
         margin: 0.5rem 0;
     }
     
-    h1 { font-size: 1.8rem; }
-    h2 { font-size: 1.5rem; }
-}
-
-/* Animations */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.element-container {
-    animation: fadeIn 0.3s ease-out;
+    h1 { font-size: 1.5rem; }
+    h2 { font-size: 1.2rem; }
 }
 """
