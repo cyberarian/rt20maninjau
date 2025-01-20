@@ -24,4 +24,4 @@ gspread
 oauth2client
 pandas
 google-api-python-client
-streamlit-awesome-table
+streamlit-aggrid
