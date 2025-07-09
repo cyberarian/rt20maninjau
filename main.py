@@ -565,7 +565,7 @@ def show_chat_interface(llm, prompt):
             
         # Footer
         st.markdown("---")
-        st.markdown("Built by Ketua RT 20 with help from AI :orange_heart:", help="cyberariani@gmail.com")
+        st.markdown("Built by Ketua RT 20 with help from AI :orange_heart:, Logo by Pak Rizky", help="cyberariani@gmail.com")
     with tab2:
         st.write("""
         ### Menghadirkan Layanan publik berbasis AI untuk warga RT 20/RW 09
