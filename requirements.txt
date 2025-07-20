@@ -26,3 +26,4 @@ pandas
 google-api-python-client
 streamlit-aggrid
 pydantic>=2.0.0
+nest_asyncio
