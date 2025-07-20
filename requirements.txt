@@ -1,5 +1,5 @@
 python-dotenv
-langchain 
+langchain>=0.1.0 
 langchain-community 
 langchain-openai
 langchain-ollama
@@ -7,7 +7,7 @@ langchain-ollama
 #faiss-cpu
 chromadb
 groq
-langchain-groq
+langchain-groq>=0.1.9
 beautifulsoup4
 streamlit
 langchain_google_genai
@@ -25,3 +25,4 @@ oauth2client
 pandas
 google-api-python-client
 streamlit-aggrid
+pydantic>=2.0.0
