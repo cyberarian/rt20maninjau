@@ -2,7 +2,6 @@ __import__('pysqlite3')
 import sys
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 import streamlit as st
-import asyncio
 import os
 import time
 import fitz  # PyMuPDF
@@ -12,6 +11,7 @@ import traceback
 import gc
 import sys
 import shutil
+from ib_insync import *
 from stqdm import stqdm
 from contextlib import contextmanager
 from typing import List
